@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> DD Live made by 轩辕瞳血 </title>
+        <meta name="keywords" content="DD Vtuber Live Bilibili 单推">
+        <meta name="description" content="DDLive made by Kenen">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no"/>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <meta http-equiv="Cache-Control" content="no-siteapp" />
+        <meta name="referrer" content="no-referrer" />
+    </head>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script type="text/javascript" src="/eel.js"></script>
+    <script type="text/javascript" src="js/flv.js"></script>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/GlobalConstraints.js"></script>
+    <script type="text/javascript" src="js/Aliver.js"></script>
+    <script type="text/javascript" src="js/Avideo.js"></script>
+    <script>
+    	function addEvent() {
+    		$(".black-panel").css("display","block")
+    		$(".search-panel").css("display","block")
+    		setTimeout(()=>{$(".search-panel").css("opacity","1");},30)
+    	}
+
+    	function cancelEvent() {
+    		$(".search-panel").css("opacity","0");
+    		$(".search-panel").css("display","none")
+    		$(".info-panel").css("opacity", "0")
+    		$(".info-panel").css("display", "none")
+    		$(".black-panel").css("display","none")
+    		$(".fail-panel").css("opacity", "0")
+    		$(".fail-panel").css("display","none")
+    		$(".search-text").val("")
+    	}
+
+    	function infoEvent() {
+    		var uid = $(".search-text").val()
+    		$(".search-panel").css("opacity","0")
+    		$(".search-panel").css("display","none")
+    		newLiver = new Aliver(uid)
+    		var k = setInterval(()=>{
+    			if (newLiver.liverInfoFlag == 1 && newLiver.roomInfoFlag == 1 && newLiver.addressInfoFlag == 1) {
+    				$(".info-container").html(`
+	    				<img src="`+newLiver.img+`">
+	    				<p>Name: `+newLiver.name+`</p>
+	    				<p>UID: `+newLiver.uid+`</p>
+	    				<p>RoomID: `+newLiver.roomid+`</p>
+	    				<p>Sign: `+newLiver.desc+`</p>
+    					`)
+    				$(".info-panel").css("display","block")
+    				setTimeout(()=>{$(".info-panel").css("opacity","1");},30)
+    				clearInterval(k)
+    			}
+    			else if (newLiver.liverInfoFlag == -1 || newLiver.roomInfoFlag == -1 || newLiver.addressInfoFlag == -1) {
+    				$(".fail-panel").css("display","block")
+    				setTimeout(()=>{$(".fail-panel").css("opacity","1");},30)
+    				clearInterval(k)
+    			}
+    		}, 500)
+    	}
+
+    	function pushEvent() {
+    		liverInfo.push(newLiver);
+    		UIDInfo.push(newLiver.uid);
+    		eel.writeJson(UIDInfo.toString())
+    		cancelEvent()
+    		refresh()
+    	}
+
+    	function clickli(num) {
+    		var curStatus = liverInfo[num].active;
+    		if (curStatus) {
+    			liverInfo[num].active = false
+    			$("#liver"+num).removeClass("chosen")
+    			videoInst["liver"+num].stop();
+    		}
+    		else {
+    			liverInfo[num].active = true
+    			$("#liver"+num).addClass("chosen")
+    			videoInst["liver"+num].play();
+    		}
+    	}
+
+    	function refresh() {
+    		for (var key in videoInst) {
+    			videoInst[key].delete()
+    			delete videoInst[key];
+    		}
+    		for (var liver of liverInfo) {
+    			if (liver.element!=null) liver.element.remove();
+    			liver.readData()
+    		}
+    		var s = setInterval(refreshList,500);
+			setTimeout(()=>{clearInterval(s)}, 5000);
+    	}
+
+    	function refreshList() {
+    		var t = 0;
+    		for (var liver of liverInfo) {
+    				t = t+1;
+					if (liver.liverInfoFlag== 1 && liver.roomInfoFlag == 1 && 
+						liver.addressInfoFlag == 1 && liver.load == false) {
+						var a = ""
+						var b = ""
+						var c = ""
+						if (liver.active) c = "chosen";
+						if (liver.liveStatus == 1) {
+							a = "living"
+							b = "直播中"
+						}
+						else {
+							a = "unliving"
+							b = "未开播"
+						}
+						if (liver.element == null) {
+    						liver.element = $('<li id="liver'+(t-1)+'" onclick="clickli('+(t-1)+')" class="'+c+'"><div class="liver-container"><div class="liver-img"><img src="'+liver.img+'"></div><div class="liver-condition"><p class="liver-condition-title">'+liver.title+'</p><p class="liver-condition-status '+a+'">●&nbsp;&nbsp;<span>'+b+'</span></p></div></div></li>')
+    					}
+
+						$(".liver-list").append(liver.element)
+						liver.load = true
+						videoInst["liver"+(t-1)]=new Avideo(liver.liveAddress ,t-1)
+						if (liver.active) videoInst["liver"+(t-1)].play();
+					}
+    		}
+ 	   }
+
+        $(document).ready(function(){
+        	var w = document.body.clientWidth;
+        	var leftW = parseInt($(".left-bar-panel").css("width"));
+        	$(".video-panel").css("width", (w-leftW)+"px");
+
+        	$.getJSON("data/Livers.json", function(data, status){
+			    if (status == 'success') {
+			        console.log("Success: data received.")
+			        UIDInfo = data
+			        for (var uid in UIDInfo) {
+			        	liverInfo.push(new Aliver(UIDInfo[uid]))
+			        }
+			        return UIDInfo
+			    }
+			    else {
+			        console.log("Failed: data rejected")
+			        return false
+			    }
+			})
+
+			var t = setInterval(refreshList,500);
+			setTimeout(()=>{clearInterval(t)}, 5000);
+
+        });       
+    </script>
+
+    <body>
+    	<div class="left-bar-panel">
+    		<img src="imgs/DDLive.png" class="left-bar-icon">
+    		<div class="left-bar-container">
+    			<div class="left-bar-content">
+    				<ul class="liver-list">
+    				</ul>
+    			</div>
+    			<div class="left-bar-controller">
+    				<div class="controller"><img src="imgs/Add.png" class="control-icon left-bar-add-icon" onclick="addEvent()"></div><div class="controller"><img src="imgs/refresh.png" class="control-icon left-bar-refresh-icon" onclick="refresh()"></div>
+    			</div>
+    		</div>
+    	</div>
+    	<main class="video-panel">
+    	</main>
+    	<div class="black-panel" onclick="cancelEvent()">
+    	</div>
+	    <div class="search-panel">
+			<div class="search-container">
+				<input type="text" placeholder="Input UID" class="search-text">
+			</div>
+			<div class="search-buttons">
+				<div class="button submit-button" onclick="infoEvent()">√</div>
+				<div class="button cancel-button" onclick="cancelEvent()">×</div>
+			</div>
+		</div>
+		<div class="info-panel">
+			<div class="info-container">
+			</div>
+			<div class="info-buttons">
+				<div class="button submit-button" onclick="pushEvent()">√</div>
+				<div class="button cancel-button" onclick="cancelEvent()">×</div>
+			</div>
+		</div>
+		<div class="fail-panel">
+			获取该用户信息失败。请确保该用户存在，拥有直播间并进行过直播。
+		</div>
+    </body>
+</html>
