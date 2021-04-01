@@ -15,7 +15,8 @@ def getLiverInfo(uid):
 @eel.expose
 def getRoomInfo(uid):
 	headers = {
-	    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36'
+	    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36',
+	    'cookie': "_uuid=C85952D5-3949-7B66-D80F-B28F31F9EE2144004infoc;"
 	}
 	url = 'https://api.live.bilibili.com/room/v1/Room/getRoomInfoOld?mid='+str(uid);
 	requests.packages.urllib3.disable_warnings()

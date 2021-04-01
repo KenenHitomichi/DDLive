@@ -48,7 +48,6 @@ class Aliver {
             this.roomStatus = value["data"]["roomStatus"];
             this.title = value["data"]["title"];
             this.roomid = value["data"]["roomid"];
-
             eel.getLiveAddress(this.roomid)().then((value)=>{
                 if (value["code"]!=0) {
                     this.addressInfoFlag = -1;

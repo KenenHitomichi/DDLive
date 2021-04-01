@@ -39,6 +39,7 @@
     		var uid = $(".search-text").val()
     		$(".search-panel").css("opacity","0")
     		$(".search-panel").css("display","none")
+
     		newLiver = new Aliver(uid)
     		var k = setInterval(()=>{
     			if (newLiver.liverInfoFlag == 1 && newLiver.roomInfoFlag == 1 && newLiver.addressInfoFlag == 1) {
@@ -126,6 +127,12 @@
     		}
  	   }
 
+       window.onresize = ()=> {
+            var w = document.body.clientWidth;
+            var leftW = parseInt($(".left-bar-panel").css("width"));
+            $(".video-panel").css("width", (w-leftW)+"px");
+       }
+
         $(document).ready(function(){
         	var w = document.body.clientWidth;
         	var leftW = parseInt($(".left-bar-panel").css("width"));
@@ -147,7 +154,7 @@
 			})
 
 			var t = setInterval(refreshList,500);
-			setTimeout(()=>{clearInterval(t)}, 10000);
+			setTimeout(()=>{clearInterval(t)}, 20000);
 
         });       
     </script>
